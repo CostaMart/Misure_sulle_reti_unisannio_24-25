@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;wake-up-online&apos; to &apos;wake-up-on-lan&apos;" description="Rename resource &apos;wake-up-online&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="/wake-up-online" name="wake-up-on-lan" stamp="1716284317823" updateReferences="true"/>
+</session>

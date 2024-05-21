@@ -1,0 +1,33 @@
+!SESSION 2024-05-21 11:22:13.033 -----------------------------------------------
+eclipse.buildId=Version 1.15.1
+java.version=17.0.8.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=it_IT
+Command-line arguments:  -os win32 -ws win32 -arch x86_64
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2024-05-21 11:24:17.523
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2024-05-21 11:24:17.541
+!MESSAGE Log4j2 initialized with config file C:\Users\Alessandro\progetto_misure_sulle_reti\.metadata\.log4j2.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2024-05-21 11:24:23.625
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.cdt.core 1 0 2024-05-21 11:36:19.660
+!MESSAGE Indexed 'wake-up-online' (20 sources, 81 headers) in 5.33 sec: 7,078 declarations; 40,184 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.0042%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2024-05-21 11:38:38.191
+!MESSAGE Indexed 'wake-up-on-lan' (0 sources, 0 headers) in 0.004 sec: 0 declarations; 0 references; 0 unresolved inclusions; 0 syntax errors; 0 unresolved names (0%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2024-05-21 11:41:01.535
+!MESSAGE Indexed 'wake-up-on-lan' (21 sources, 144 headers) in 4.49 sec: 18,161 declarations; 73,248 references; 1 unresolved inclusions; 120 syntax errors; 247 unresolved names (0.27%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2024-05-21 11:41:15.210
+!MESSAGE Indexed 'wake-up-on-lan' (20 sources, 81 headers) in 1.93 sec: 7,078 declarations; 40,184 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.0042%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2024-05-21 11:44:50.481
+!MESSAGE Indexed 'h7-wake-on-lan_CM4' (25 sources, 86 headers) in 2.59 sec: 7,733 declarations; 54,687 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.0032%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2024-05-21 11:44:59.450
+!MESSAGE Indexed 'h7-wake-on-lan_CM7' (128 sources, 222 headers) in 8.96 sec: 18,386 declarations; 135,712 references; 1 unresolved inclusions; 1 syntax errors; 57 unresolved names (0.037%)
