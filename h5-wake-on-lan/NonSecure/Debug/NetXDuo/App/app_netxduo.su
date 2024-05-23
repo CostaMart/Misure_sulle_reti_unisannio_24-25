@@ -1,0 +1,2 @@
+../NetXDuo/App/app_netxduo.c:73:6:MX_NetXDuo_Init	64	static
+../NetXDuo/App/app_netxduo.c:204:13:nx_app_thread_entry	560	static

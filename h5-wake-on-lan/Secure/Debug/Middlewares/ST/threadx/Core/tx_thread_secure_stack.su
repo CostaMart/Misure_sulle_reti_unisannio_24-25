@@ -1,0 +1,5 @@
+C:/Users/Alessandro/progetto_misure_sulle_reti/h5-wake-on-lan/Middlewares/ST/threadx/ports/cortex_m33/gnu/src/tx_thread_secure_stack.c:119:9:_tx_thread_secure_mode_stack_initialize	24	static,ignoring_inline_asm
+C:/Users/Alessandro/progetto_misure_sulle_reti/h5-wake-on-lan/Middlewares/ST/threadx/ports/cortex_m33/gnu/src/tx_thread_secure_stack.c:216:9:_tx_thread_secure_mode_stack_allocate	72	static,ignoring_inline_asm
+C:/Users/Alessandro/progetto_misure_sulle_reti/h5-wake-on-lan/Middlewares/ST/threadx/ports/cortex_m33/gnu/src/tx_thread_secure_stack.c:363:9:_tx_thread_secure_mode_stack_free	48	static,ignoring_inline_asm
+C:/Users/Alessandro/progetto_misure_sulle_reti/h5-wake-on-lan/Middlewares/ST/threadx/ports/cortex_m33/gnu/src/tx_thread_secure_stack.c:468:6:_tx_thread_secure_stack_context_save	32	static,ignoring_inline_asm
+C:/Users/Alessandro/progetto_misure_sulle_reti/h5-wake-on-lan/Middlewares/ST/threadx/ports/cortex_m33/gnu/src/tx_thread_secure_stack.c:561:6:_tx_thread_secure_stack_context_restore	32	static,ignoring_inline_asm
