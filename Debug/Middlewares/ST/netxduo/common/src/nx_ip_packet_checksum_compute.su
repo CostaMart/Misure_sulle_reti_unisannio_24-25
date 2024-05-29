@@ -1,0 +1,1 @@
+../Middlewares/ST/netxduo/common/src/nx_ip_packet_checksum_compute.c:80:7:_nx_ip_packet_checksum_compute	104	static
