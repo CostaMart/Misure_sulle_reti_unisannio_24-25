@@ -1,4 +1,11 @@
- /**
+/**
+  * da utilizzare per scrivere nei registri MMD del fisico ethernet.
+  * originariamente scritta nel file /Drivers/BSP/Components/lan8742/lan8742.c, file che appare se si fa un progetto con NetxDuo attivo
+  *
+  * */
+
+
+/**
   * @brief write in MMD register
   * @param pObj: device object LAN8742_Object_t.
   * @param target: address to write in.
