@@ -11,12 +11,13 @@
 #define MII_LAN874X_PHY_MMD_WOL_WUCSR		((uint16_t)0x8010U)
 
 void LAN8742_enable_wol(lan8742_Object_t *pObj){
-	 uint16_t val = 0x4200;
+	 uint16_t val = 0x4202;
 
-     // passo 1 -- settiamo i bit 01 per abilitare PME sul led1
-	 // abilitiamo anche il self clear ponendo il bit 9 a 1
-	// 0x4202
-   // 0100001000000010
+    // passo 1 -- settiamo i bit 01 per abilitare PME sul led1
+	// abilitiamo anche il self clear ponendo il bit 9 a 1
+	// alzo il secondo bit a 1 per abilitare il wake on lan tramite magic packet
+    // valore binario finale: 0100001000000010
+	// hex: 0x4202
 	 LAN8742_write_mmd(pObj, MII_LAN874X_PHY_MMD_WOL_WUCSR, val);
 
 
