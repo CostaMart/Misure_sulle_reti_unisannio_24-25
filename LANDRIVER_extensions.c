@@ -11,33 +11,36 @@
 #define MII_LAN874X_PHY_MMD_WOL_WUCSR		((uint16_t)0x8010U)
 
 void LAN8742_enable_wol(lan8742_Object_t *pObj){
-	 uint16_t val = 0x4202;
+ 	 uint16_t val = 0x4222;
 
-    // passo 1 -- settiamo i bit 01 per abilitare PME sul led1
-	// abilitiamo anche il self clear ponendo il bit 9 a 1
-	// alzo il secondo bit a 1 per abilitare il wake on lan tramite magic packet
-    // valore binario finale: 0100001000000010
-	// hex: 0x4202
-	 LAN8742_write_mmd(pObj, MII_LAN874X_PHY_MMD_WOL_WUCSR, val);
+     // passo 1 -- settiamo i bit 01 per abilitare PME sul led1
+ 	// abilitiamo anche il self clear ponendo il bit 9 a 1
+ 	// alzo il secondo bit a 1 per abilitare il wake on lan tramite magic packet
+ 	// alzo il bit Magic Packet Received (MPR) (bit 5)  a 1 per sollecitarne il reset
+     // valore binario finale: 0100001000100010
+ 	// hex: 0x4222
+ 	 LAN8742_write_mmd(pObj, MII_LAN874X_PHY_MMD_WOL_WUCSR, val);
 
 
-	 val = 0x1000;
-	// passo 1 impostiamo il tempo di reset per il self clear del bit PME
-	 LAN8742_write_mmd(pObj, MII_LAN874X_PHY_MCFGR, val);
+ 	 val = 0x1000;
+ 	// passo 1 impostiamo il tempo di reset per il self clear del bit PME
+ 	 LAN8742_write_mmd(pObj, MII_LAN874X_PHY_MCFGR, val);
 
-	 // imposto i registri ADDR per riconoscere il MAC nel magic packet
-	 // assumento che il MAC sia 00:80:E1:00:00:00
+ 	 // imposto i registri ADDR per riconoscere il MAC nel magic packet
+ 	 // assumento che il MAC sia 00:80:E1:00:00:00
 
-	 // registro A:
-	 uint16_t A = 0x0000;
-	 LAN8742_write_mmd(pObj, MII_LAN874X_PHY_RX_ADDRA, A);
-	 // registro B:
-	 uint16_t B = 0x00E1;
-	 LAN8742_write_mmd(pObj, MII_LAN874X_PHY_RX_ADDRB, B);
-	 // registro C:
-	 uint16_t C = 0x8000;
-	 LAN8742_write_mmd(pObj, MII_LAN874X_PHY_RX_ADDRC, C);
- }
+ 	 // registro A:
+ 	 uint16_t A = 0x0000;
+ 	 LAN8742_write_mmd(pObj, MII_LAN874X_PHY_RX_ADDRA, A);
+ 	 // registro B:
+ 	 uint16_t B = 0x00E1;
+ 	 LAN8742_write_mmd(pObj, MII_LAN874X_PHY_RX_ADDRB, B);
+ 	 // registro C:
+ 	 uint16_t C = 0x8000;
+ 	 LAN8742_write_mmd(pObj, MII_LAN874X_PHY_RX_ADDRC, C);
+  }
+
+
 
 
 /**
