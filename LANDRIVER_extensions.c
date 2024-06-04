@@ -13,7 +13,7 @@
 void LAN8742_enable_wol(lan8742_Object_t *pObj){
  	 uint16_t val = 0x4222;
 
-     // passo 1 -- settiamo i bit 01 per abilitare PME sul led1
+     // passo 1 -- settiamo i bit 15-14 a 01 per abilitare PME sul led1
  	// abilitiamo anche il self clear ponendo il bit 9 a 1
  	// alzo il secondo bit a 1 per abilitare il wake on lan tramite magic packet
  	// alzo il bit Magic Packet Received (MPR) (bit 5)  a 1 per sollecitarne il reset
