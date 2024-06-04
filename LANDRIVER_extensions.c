@@ -1,7 +1,7 @@
 /**
   * da utilizzare per scrivere nei registri MMD del fisico ethernet.
   * originariamente scritta nel file /Drivers/BSP/Components/lan8742/lan8742.c, file che appare se si fa un progetto con NetxDuo attivo
-  *
+  * IMPORTANTE: nella funzione di init del fisico c'è un' attesa di 2 secondi durante la quale il sistema operativo riprende il controllo e fa cose strane, potrebbe essere opportuno levarla
   * */
 
 #define MII_LAN874X_PHY_RX_ADDRA ((uint16_t)0x8061U)
