@@ -50,7 +50,7 @@ ETH_DMADescTypeDef  DMATxDscrTab[ETH_TX_DESC_CNT]; /* Ethernet Tx DMA Descriptor
 ETH_HandleTypeDef heth;
 
 /* USER CODE BEGIN PV */
-
+UCHAR memory_area[MEMORY_SIZE];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -98,7 +98,11 @@ int main(void)
   MX_ETH_Init();
   MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
-
+  // Inizializzazione dell'area di memoria con valori dummy
+  for (ULONG i = 0; i < MEMORY_SIZE; i++)
+  {
+    memory_area[i] = 'a';
+  }
   /* USER CODE END 2 */
 
   MX_ThreadX_Init();

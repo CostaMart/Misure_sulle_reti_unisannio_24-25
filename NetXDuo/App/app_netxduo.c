@@ -53,7 +53,7 @@ TX_THREAD      NxAppThread;
 NX_PACKET_POOL NxAppPool;
 NX_IP          NetXDuoEthIpInstance;
 /* USER CODE BEGIN PV */
-
+extern UCHAR memory_area[MEMORY_SIZE];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -82,7 +82,7 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
   (void)byte_pool;
   /* USER CODE END App_NetXDuo_MEM_POOL */
   /* USER CODE BEGIN 0 */
-  printf("Nx_UDP_Echo_Server application started..\n");
+  printf("Nx_UDP_Echo_Server application started...\n");
   /* USER CODE END 0 */
 
   /* Initialize the NetXDuo system. */
@@ -146,19 +146,6 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
   /* USER CODE END ICMP_Protocol_Initialization */
 
   ret = nx_icmp_enable(&NetXDuoEthIpInstance);
-
-  if (ret != NX_SUCCESS)
-  {
-    return NX_NOT_SUCCESSFUL;
-  }
-
-  /* Enable TCP Protocol */
-
-  /* USER CODE BEGIN TCP_Protocol_Initialization */
-
-  /* USER CODE END TCP_Protocol_Initialization */
-
-  ret = nx_tcp_enable(&NetXDuoEthIpInstance);
 
   if (ret != NX_SUCCESS)
   {
@@ -260,72 +247,116 @@ static VOID nx_app_thread_entry (ULONG thread_input)
 
 }
 /* USER CODE BEGIN 1 */
+
 static VOID app_UDP_thread_entry(ULONG thread_input)
 {
   UINT ret;
-  ULONG bytes_read;
-  UINT source_port;
-
   UCHAR data_buffer[512];
-  ULONG source_ip_address;
+  ULONG bytes_read;
+  NX_PACKET *server_packet;
   NX_PACKET *data_packet;
 
+  ULONG offset = 0;
+  ULONG packet_size = 512;  // Maximum packet size
+
   /* create the UDP socket */
-  ret = nx_udp_socket_create(&NetXDuoEthIpInstance, &UDPSocket, "UDP Server Socket", NX_IP_NORMAL, NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE, QUEUE_MAX_SIZE);
-
+  ret = nx_udp_socket_create(&NetXDuoEthIpInstance, &UDPSocket, "UDP Client Socket", NX_IP_NORMAL, NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE, QUEUE_MAX_SIZE);
   if (ret != NX_SUCCESS)
   {
-     Error_Handler();
+    Error_Handler();
   }
 
-  /* bind the socket indefinitely on the required port */
+  /* bind UDP socket to the DEFAULT PORT */
   ret = nx_udp_socket_bind(&UDPSocket, DEFAULT_PORT, TX_WAIT_FOREVER);
-
   if (ret != NX_SUCCESS)
   {
-     Error_Handler();
-  }
-  else
-  {
-    printf("UDP Server listening on PORT %d.. \n", DEFAULT_PORT);
+    Error_Handler();
   }
 
-  while(1)
+  while (offset < MEMORY_SIZE)
   {
     TX_MEMSET(data_buffer, '\0', sizeof(data_buffer));
 
-    /* wait for data for 1 sec */
-    ret = nx_udp_socket_receive(&UDPSocket, &data_packet, 100);
+    /* create the packet to send over the UDP socket */
+    ret = nx_packet_allocate(&NxAppPool, &data_packet, NX_UDP_PACKET, TX_WAIT_FOREVER);
+    if (ret != NX_SUCCESS)
+    {
+      Error_Handler();
+    }
 
+    /* Determine the size of the current packet */
+    ULONG current_packet_size = (MEMORY_SIZE - offset) > packet_size ? packet_size : (MEMORY_SIZE - offset);
+
+    /* Append data from the memory area to the packet */
+    ret = nx_packet_data_append(data_packet, (VOID *)(memory_area + offset), current_packet_size, &NxAppPool, TX_WAIT_FOREVER);
+    if (ret != NX_SUCCESS)
+    {
+      Error_Handler();
+    }
+
+    /* Send the packet */
+    ret = nx_udp_socket_send(&UDPSocket, data_packet, UDP_SERVER_ADDRESS, UDP_SERVER_PORT);
+    if (ret != NX_SUCCESS)
+    {
+      Error_Handler();
+    }
+
+    HAL_GPIO_TogglePin(LED1_GREEN_GPIO_Port, LED1_GREEN_Pin);
+
+    /* wait to receive response from the server */
+    ret = nx_udp_socket_receive(&UDPSocket, &server_packet, NX_APP_DEFAULT_TIMEOUT);
     if (ret == NX_SUCCESS)
     {
-      /* data is available, read it into the data buffer */
-      nx_packet_data_retrieve(data_packet, data_buffer, &bytes_read);
+      ULONG source_ip_address;
+      UINT source_port;
 
-      /* get info about the client address and port */
-      nx_udp_source_extract(data_packet, &source_ip_address, &source_port);
+      /* Get the server IP address and port */
+      nx_udp_source_extract(server_packet, &source_ip_address, &source_port);
 
-      /* print the client address, the remote port and the received data */
+      /* Retrieve the data sent by the server */
+      nx_packet_data_retrieve(server_packet, data_buffer, &bytes_read);
+
+      /* Print the received data */
       PRINT_DATA(source_ip_address, source_port, data_buffer);
 
-      /* resend the same packet to the client */
-      ret =  nx_udp_socket_send(&UDPSocket, data_packet, source_ip_address, source_port);
+      /* Release the server packet */
+      nx_packet_release(server_packet);
 
-      /* toggle the green yellow to monitor visually the traffic */
+      /* Toggle the green LED on success */
       HAL_GPIO_TogglePin(LED1_GREEN_GPIO_Port, LED1_GREEN_Pin);
-      HAL_PWR_DisableWakeUpPin(PWR_WKUP4);
-      HAL_PWR_EnableWakeUpPin(PWR_WKUP4);
-      HAL_Delay(2000);
-      HAL_PWR_EnterSTANDBYMode();
-
     }
     else
     {
-        /* the server is in idle state, toggle the yellow led */
-        HAL_GPIO_TogglePin(LED2_YELLOW_GPIO_Port, LED2_YELLOW_Pin);
+      /* Connection lost with the server, exit the loop */
+      break;
     }
+
+    /* Move the offset for the next packet */
+    offset += current_packet_size;
+
+    /* Add a short timeout to let the echool tool correctly
+    process the just sent packet before sending a new one */
+//    tx_thread_sleep(20);
+  }
+
+  /* unbind the socket and delete it */
+  nx_udp_socket_unbind(&UDPSocket);
+  nx_udp_socket_delete(&UDPSocket);
+
+  if (offset >= MEMORY_SIZE)
+  {
+    printf("\n-------------------------------------\n\tSUCCESS : %lu / %lu Bytes sent\n-------------------------------------\n", (unsigned long)offset, (unsigned long)MEMORY_SIZE);
+    HAL_PWR_DisableWakeUpPin(PWR_WKUP4);
+    HAL_PWR_EnableWakeUpPin(PWR_WKUP4);
+    HAL_PWR_EnterSTANDBYMode();
+  }
+  else
+  {
+    printf("\n-------------------------------------\n\tFAIL : %lu / %lu packets sent\n-------------------------------------\n", (unsigned long)offset, (unsigned long)MEMORY_SIZE);
+    Error_Handler();
   }
 }
+
 
 /**
 * @brief  Link thread entry

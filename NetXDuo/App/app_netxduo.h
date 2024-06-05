@@ -87,9 +87,11 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr);
 #define DEFAULT_PRIORITY         10
 #define LINK_PRIORITY            11
 
-#define NULL_ADDRESS             0
-
 #define DEFAULT_PORT             6000
+#define UDP_SERVER_PORT          DEFAULT_PORT
+#define UDP_SERVER_ADDRESS       IP_ADDRESS(192, 168, 1, 101)
+
+
 /* USER CODE END PD */
 
 #define NX_APP_DEFAULT_TIMEOUT               (10 * NX_IP_PERIODIC_RATE)

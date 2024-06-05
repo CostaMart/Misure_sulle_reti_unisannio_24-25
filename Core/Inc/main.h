@@ -41,7 +41,7 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+#define MEMORY_SIZE 50*1024  // 50 KB
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

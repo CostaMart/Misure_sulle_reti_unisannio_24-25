@@ -1,4 +1,4 @@
-../NetXDuo/App/app_netxduo.c:76:6:MX_NetXDuo_Init	16
-../NetXDuo/App/app_netxduo.c:238:13:nx_app_thread_entry	2
-../NetXDuo/App/app_netxduo.c:263:13:app_UDP_thread_entry	4
-../NetXDuo/App/app_netxduo.c:335:13:app_link_thread_entry	5
+../NetXDuo/App/app_netxduo.c:76:6:MX_NetXDuo_Init	15
+../NetXDuo/App/app_netxduo.c:225:13:nx_app_thread_entry	2
+../NetXDuo/App/app_netxduo.c:251:13:app_UDP_thread_entry	9
+../NetXDuo/App/app_netxduo.c:366:13:app_link_thread_entry	5
