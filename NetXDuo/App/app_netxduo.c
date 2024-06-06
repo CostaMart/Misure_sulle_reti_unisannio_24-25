@@ -252,12 +252,14 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
 {
   UINT ret;
   UCHAR data_buffer[512];
-  ULONG bytes_read;
+  UINT bytes_read;
   NX_PACKET *server_packet;
   NX_PACKET *data_packet;
 
-  ULONG offset = 0;
-  ULONG packet_size = 512;  // Maximum packet size
+  UINT pkt_number = 0;	/* packet number */
+  UINT offset = 0;
+  UINT packet_size = 1472;  /* Maximum safe packet size for Ethernet without fragmentation */
+  UINT header_size = sizeof(UINT);  /* Size of the packet number header */
 
   /* create the UDP socket */
   ret = nx_udp_socket_create(&NetXDuoEthIpInstance, &UDPSocket, "UDP Client Socket", NX_IP_NORMAL, NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE, QUEUE_MAX_SIZE);
@@ -285,7 +287,10 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
     }
 
     /* Determine the size of the current packet */
-    ULONG current_packet_size = (MEMORY_SIZE - offset) > packet_size ? packet_size : (MEMORY_SIZE - offset);
+    ULONG current_packet_size = (MEMORY_SIZE - offset) > (packet_size - header_size) ? (packet_size - header_size) : (MEMORY_SIZE - offset);
+
+    /* Append packet number to the packet */
+    ret = nx_packet_data_append(data_packet, &pkt_number, header_size, &NxAppPool, TX_WAIT_FOREVER);
 
     /* Append data from the memory area to the packet */
     ret = nx_packet_data_append(data_packet, (VOID *)(memory_area + offset), current_packet_size, &NxAppPool, TX_WAIT_FOREVER);
@@ -301,42 +306,8 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
       Error_Handler();
     }
 
-    HAL_GPIO_TogglePin(LED1_GREEN_GPIO_Port, LED1_GREEN_Pin);
-
-    /* wait to receive response from the server */
-    ret = nx_udp_socket_receive(&UDPSocket, &server_packet, NX_APP_DEFAULT_TIMEOUT);
-    if (ret == NX_SUCCESS)
-    {
-      ULONG source_ip_address;
-      UINT source_port;
-
-      /* Get the server IP address and port */
-      nx_udp_source_extract(server_packet, &source_ip_address, &source_port);
-
-      /* Retrieve the data sent by the server */
-      nx_packet_data_retrieve(server_packet, data_buffer, &bytes_read);
-
-      /* Print the received data */
-      PRINT_DATA(source_ip_address, source_port, data_buffer);
-
-      /* Release the server packet */
-      nx_packet_release(server_packet);
-
-      /* Toggle the green LED on success */
-      HAL_GPIO_TogglePin(LED1_GREEN_GPIO_Port, LED1_GREEN_Pin);
-    }
-    else
-    {
-      /* Connection lost with the server, exit the loop */
-      break;
-    }
-
     /* Move the offset for the next packet */
     offset += current_packet_size;
-
-    /* Add a short timeout to let the echool tool correctly
-    process the just sent packet before sending a new one */
-//    tx_thread_sleep(20);
   }
 
   /* unbind the socket and delete it */
@@ -345,14 +316,12 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
 
   if (offset >= MEMORY_SIZE)
   {
-    printf("\n-------------------------------------\n\tSUCCESS : %lu / %lu Bytes sent\n-------------------------------------\n", (unsigned long)offset, (unsigned long)MEMORY_SIZE);
-    HAL_PWR_DisableWakeUpPin(PWR_WKUP4);
-    HAL_PWR_EnableWakeUpPin(PWR_WKUP4);
+    HAL_PWR_DisableWakeUpPin(PWR_WKUP1);
+    HAL_PWR_EnableWakeUpPin(PWR_WKUP1);
     HAL_PWR_EnterSTANDBYMode();
   }
   else
   {
-    printf("\n-------------------------------------\n\tFAIL : %lu / %lu packets sent\n-------------------------------------\n", (unsigned long)offset, (unsigned long)MEMORY_SIZE);
     Error_Handler();
   }
 }
