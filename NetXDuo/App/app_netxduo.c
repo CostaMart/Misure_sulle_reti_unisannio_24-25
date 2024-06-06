@@ -252,8 +252,6 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
 {
   UINT ret;
   UCHAR data_buffer[512];
-  UINT bytes_read;
-  NX_PACKET *server_packet;
   NX_PACKET *data_packet;
 
   UINT pkt_number = 0;	/* packet number */
@@ -291,6 +289,10 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
 
     /* Append packet number to the packet */
     ret = nx_packet_data_append(data_packet, &pkt_number, header_size, &NxAppPool, TX_WAIT_FOREVER);
+    if (ret != NX_SUCCESS)
+    {
+      Error_Handler();
+    }
 
     /* Append data from the memory area to the packet */
     ret = nx_packet_data_append(data_packet, (VOID *)(memory_area + offset), current_packet_size, &NxAppPool, TX_WAIT_FOREVER);
