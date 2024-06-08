@@ -42,34 +42,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := nx_wake
+BUILD_ARTIFACT_NAME := h5_wake_on_lan
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-nx_wake.elf \
+h5_wake_on_lan.elf \
 
 MAP_FILES += \
-nx_wake.map \
+h5_wake_on_lan.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-nx_wake.list \
+h5_wake_on_lan.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: nx_wake.elf secondary-outputs
+main-build: h5_wake_on_lan.elf secondary-outputs
 
 # Tool invocations
-nx_wake.elf nx_wake.map: $(OBJS) $(USER_OBJS) C:\Users\Alessandro\STM32CubeIDE\workspace_1.14.1\nx_wake\STM32H563ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "nx_wake.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m33 -T"C:\Users\Alessandro\STM32CubeIDE\workspace_1.14.1\nx_wake\STM32H563ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="nx_wake.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+h5_wake_on_lan.elf h5_wake_on_lan.map: $(OBJS) $(USER_OBJS) C:\Users\Alessandro\STM32CubeIDE\workspace_1.14.1\nx_wake\STM32H563ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "h5_wake_on_lan.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m33 -T"C:\Users\Alessandro\STM32CubeIDE\workspace_1.14.1\nx_wake\STM32H563ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="h5_wake_on_lan.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -78,14 +78,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-nx_wake.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "nx_wake.list"
+h5_wake_on_lan.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "h5_wake_on_lan.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) default.size.stdout nx_wake.elf nx_wake.list nx_wake.map
+	-$(RM) default.size.stdout h5_wake_on_lan.elf h5_wake_on_lan.list h5_wake_on_lan.map
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)

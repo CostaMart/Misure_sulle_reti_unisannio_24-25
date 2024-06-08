@@ -82,7 +82,7 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
   (void)byte_pool;
   /* USER CODE END App_NetXDuo_MEM_POOL */
   /* USER CODE BEGIN 0 */
-  printf("Nx_UDP_Echo_Server application started...\n");
+  printf("Application started...\n");
   /* USER CODE END 0 */
 
   /* Initialize the NetXDuo system. */
@@ -248,16 +248,106 @@ static VOID nx_app_thread_entry (ULONG thread_input)
 }
 /* USER CODE BEGIN 1 */
 
+/* Send UDP packets stream for all memory content */
+//static VOID app_UDP_thread_entry(ULONG thread_input)
+//{
+//  UINT ret;
+//  NX_PACKET *data_packet;
+//
+//  UINT pkt_number = 0;	/* packet number */
+//  UINT offset = 0;
+//  UINT packet_size = 1472;  /* Maximum safe packet size for Ethernet without fragmentation */
+//  UINT header_size = sizeof(UINT);  /* Size of the packet number header */
+//
+//  /* create the UDP socket */
+//  ret = nx_udp_socket_create(&NetXDuoEthIpInstance, &UDPSocket, "UDP Client Socket", NX_IP_NORMAL, NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE, QUEUE_MAX_SIZE);
+//  if (ret != NX_SUCCESS)
+//  {
+//    Error_Handler();
+//  }
+//
+//  /* bind UDP socket to the DEFAULT PORT */
+//  ret = nx_udp_socket_bind(&UDPSocket, DEFAULT_PORT, TX_WAIT_FOREVER);
+//  if (ret != NX_SUCCESS)
+//  {
+//    Error_Handler();
+//  }
+//
+//  while (offset < MEMORY_SIZE)
+//  {
+//    /* create the packet to send over the UDP socket */
+//    ret = nx_packet_allocate(&NxAppPool, &data_packet, NX_UDP_PACKET, TX_WAIT_FOREVER);
+//    if (ret != NX_SUCCESS)
+//    {
+//      Error_Handler();
+//    }
+//
+//    /* Determine the size of the current packet */
+//    ULONG current_packet_size = (MEMORY_SIZE - offset) > (packet_size - header_size) ? (packet_size - header_size) : (MEMORY_SIZE - offset);
+//
+//    /* Append packet number to the packet */
+//    ret = nx_packet_data_append(data_packet, (VOID *) &pkt_number, header_size, &NxAppPool, TX_WAIT_FOREVER);
+//    if (ret != NX_SUCCESS)
+//    {
+//      Error_Handler();
+//    }
+//
+//    /* Append data from the memory area to the packet */
+//    ret = nx_packet_data_append(data_packet, (VOID *)(memory_area + offset), current_packet_size, &NxAppPool, TX_WAIT_FOREVER);
+//    if (ret != NX_SUCCESS)
+//    {
+//      Error_Handler();
+//    }
+//
+//    /* Send the packet */
+//    ret = nx_udp_socket_send(&UDPSocket, data_packet, UDP_SERVER_ADDRESS, UDP_SERVER_PORT);
+//    if (ret != NX_SUCCESS)
+//    {
+//      Error_Handler();
+//    }
+//
+//    /* Move the offset for the next packet */
+//    offset += current_packet_size;
+//	  /* Increase sequence number of the packets */
+//    pkt_number++;
+//
+////    tx_thread_sleep(20);
+//  }
+//
+//  /* unbind the socket and delete it */
+//  nx_udp_socket_unbind(&UDPSocket);
+//  nx_udp_socket_delete(&UDPSocket);
+//
+//  if (offset >= MEMORY_SIZE)
+//  {
+//    HAL_PWR_DisableWakeUpPin(PWR_WKUP1);
+//    HAL_PWR_EnableWakeUpPin(PWR_WKUP1);
+//    HAL_PWR_EnterSTANDBYMode();
+//  }
+//  else
+//  {
+//    Error_Handler();
+//  }
+//}
+
+/* Send a UDP packet and wait for server acknowledge for all memory content */
 static VOID app_UDP_thread_entry(ULONG thread_input)
 {
   UINT ret;
   UCHAR data_buffer[512];
+  ULONG bytes_read;
+  NX_PACKET *server_packet;
   NX_PACKET *data_packet;
+  UINT pkt_number = 0;
 
-  UINT pkt_number = 0;	/* packet number */
-  UINT offset = 0;
-  UINT packet_size = 1472;  /* Maximum safe packet size for Ethernet without fragmentation */
-  UINT header_size = sizeof(UINT);  /* Size of the packet number header */
+  /* Memory offeset for reading */
+  ULONG offset = 0;
+
+  /* Maximum packet size MTU Ethernet - (Minumum IP Header + Udp Header) = 1500 - (20 + 8) */
+  ULONG packet_size = 1472;
+
+  /* Size of the packet number header */
+  UINT header_size = sizeof(UINT);
 
   /* create the UDP socket */
   ret = nx_udp_socket_create(&NetXDuoEthIpInstance, &UDPSocket, "UDP Client Socket", NX_IP_NORMAL, NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE, QUEUE_MAX_SIZE);
@@ -287,8 +377,8 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
     /* Determine the size of the current packet */
     ULONG current_packet_size = (MEMORY_SIZE - offset) > (packet_size - header_size) ? (packet_size - header_size) : (MEMORY_SIZE - offset);
 
-    /* Append packet number to the packet */
-    ret = nx_packet_data_append(data_packet, &pkt_number, header_size, &NxAppPool, TX_WAIT_FOREVER);
+    /* Append packet sequence number to the packet */
+    ret = nx_packet_data_append(data_packet, (VOID *) &pkt_number, header_size, &NxAppPool, TX_WAIT_FOREVER);
     if (ret != NX_SUCCESS)
     {
       Error_Handler();
@@ -308,8 +398,38 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
       Error_Handler();
     }
 
+//    HAL_GPIO_TogglePin(LED1_GREEN_GPIO_Port, LED1_GREEN_Pin);
+
+    /* wait to receive response from the server */
+    ret = nx_udp_socket_receive(&UDPSocket, &server_packet, NX_APP_DEFAULT_TIMEOUT);
+    if (ret == NX_SUCCESS)
+    {
+      ULONG source_ip_address;
+      UINT source_port;
+
+      /* Get the server IP address and port */
+      nx_udp_source_extract(server_packet, &source_ip_address, &source_port);
+
+      /* Retrieve the data sent by the server */
+      nx_packet_data_retrieve(server_packet, data_buffer, &bytes_read);
+
+      /* Print the received data */
+      PRINT_DATA(source_ip_address, source_port, data_buffer);
+
+      /* Release the server packet */
+      nx_packet_release(server_packet);
+    }
+    else
+    {
+      /* Connection lost with the server, exit the loop */
+      break;
+    }
+
     /* Move the offset for the next packet */
     offset += current_packet_size;
+
+    /* Increase sequence number of the packets */
+    pkt_number++;
   }
 
   /* unbind the socket and delete it */
@@ -318,16 +438,17 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
 
   if (offset >= MEMORY_SIZE)
   {
+    printf("\n-------------------------------------\n\tSUCCESS : %lu / %lu Bytes sent\n-------------------------------------\n", (unsigned long)offset, (unsigned long)MEMORY_SIZE);
     HAL_PWR_DisableWakeUpPin(PWR_WKUP1);
     HAL_PWR_EnableWakeUpPin(PWR_WKUP1);
     HAL_PWR_EnterSTANDBYMode();
   }
   else
   {
+    printf("\n-------------------------------------\n\tFAIL : %lu / %lu packets sent\n-------------------------------------\n", (unsigned long)offset, (unsigned long)MEMORY_SIZE);
     Error_Handler();
   }
 }
-
 
 /**
 * @brief  Link thread entry
