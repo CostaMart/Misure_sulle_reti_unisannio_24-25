@@ -31,10 +31,8 @@
 /* USER CODE BEGIN PTD */
 /* Define Threadx global data structures. */
 TX_THREAD AppUDPThread;
-TX_THREAD AppUDPListeningThread;
 /* Define NetX global data structures. */
 NX_UDP_SOCKET UDPSocket;
-NX_UDP_SOCKET UDPListeningSocket;
 ULONG IpAddress;
 ULONG NetMask;
 /* USER CODE END PTD */
@@ -62,8 +60,6 @@ static VOID nx_app_thread_entry (ULONG thread_input);
 /* USER CODE BEGIN PFP */
 /* UDP thread entry */
 static VOID app_UDP_thread_entry(ULONG thread_input);
-/* */
-static VOID app_UDP_listening_thread_entry(ULONG thread_input);
 
 //void SystemClock_Restore(void);
 /* USER CODE END PFP */
@@ -197,21 +193,6 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
 	return TX_THREAD_ERROR;
   }
 
-  /* Allocate the memory for Listening thread   */
-  if (tx_byte_allocate(byte_pool, (VOID **) &pointer,2 *  DEFAULT_MEMORY_SIZE, TX_NO_WAIT) != TX_SUCCESS)
-  {
-  	return TX_POOL_ERROR;
-  }
-
-  /* create the Listening thread */
-  ret = tx_thread_create(&AppUDPListeningThread, "App Listening Thread", app_UDP_listening_thread_entry, 0, pointer, 2 * DEFAULT_MEMORY_SIZE,
-		  	  	  	  	 DEFAULT_PRIORITY, DEFAULT_PRIORITY, TX_NO_TIME_SLICE, TX_AUTO_START);
-
-  if (ret != TX_SUCCESS)
-  {
-  	return TX_THREAD_ERROR;
-  }
-
   /* USER CODE END MX_NetXDuo_Init */
 
   return ret;
@@ -248,17 +229,26 @@ static VOID nx_app_thread_entry (ULONG thread_input)
 }
 /* USER CODE BEGIN 1 */
 
-/* Send UDP packets stream for all memory content */
+/* Send a UDP packet and wait for server acknowledge for each packet */
 static VOID app_UDP_thread_entry(ULONG thread_input)
 {
   UINT ret;
+  UCHAR data_buffer[512];
+  ULONG bytes_read;
+  NX_PACKET *server_packet;
   NX_PACKET *data_packet;
-  UINT pkt_number = 0;	/* packet number */
-  UINT pkt_numeber_be;  /* conversion in network format*/
+  UINT pkt_number = 0;
+  UINT pkt_number_be;
   UINT current_packet_size;
-  UINT offset = 0;
-  UINT packet_size = 1472;  /* Maximum safe packet size for Ethernet without fragmentation */
-  UINT header_size = sizeof(UINT);  /* Size of the packet number header */
+
+  /* Memory offeset for reading */
+  ULONG offset = 0;
+
+  /* Maximum packet size MTU Ethernet - (Minumum IP Header + Udp Header) = 1500 - (20 + 8) */
+  ULONG packet_size = 1472;
+
+  /* Size of the packet number header */
+  UINT header_size = sizeof(UINT);
 
   /* create the UDP socket */
   ret = nx_udp_socket_create(&NetXDuoEthIpInstance, &UDPSocket, "UDP Client Socket", NX_IP_NORMAL, NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE, QUEUE_MAX_SIZE);
@@ -267,8 +257,17 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
     Error_Handler();
   }
 
+  /* bind UDP socket to the DEFAULT PORT */
+  ret = nx_udp_socket_bind(&UDPSocket, UDP_CLIENT_PORT, TX_WAIT_FOREVER);
+  if (ret != NX_SUCCESS)
+  {
+    Error_Handler();
+  }
+
   while (offset < MEMORY_SIZE)
   {
+    TX_MEMSET(data_buffer, '\0', sizeof(data_buffer));
+
     /* create the packet to send over the UDP socket */
     ret = nx_packet_allocate(&NxAppPool, &data_packet, NX_UDP_PACKET, TX_WAIT_FOREVER);
     if (ret != NX_SUCCESS)
@@ -279,11 +278,11 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
     /* Determine the size of the current packet */
     current_packet_size = (MEMORY_SIZE - offset) > (packet_size - header_size) ? (packet_size - header_size) : (MEMORY_SIZE - offset);
 
-    /* Conversion in network format */
-    pkt_numeber_be = htonl(pkt_number);
+    /* Packet number conversion in network format */
+    pkt_number_be = htonl(pkt_number);
 
-    /* Append packet number to the packet */
-    ret = nx_packet_data_append(data_packet, (VOID *) &pkt_numeber_be, header_size, &NxAppPool, TX_WAIT_FOREVER);
+    /* Append packet sequence number to the packet */
+    ret = nx_packet_data_append(data_packet, (VOID *) &pkt_number_be, header_size, &NxAppPool, TX_WAIT_FOREVER);
     if (ret != NX_SUCCESS)
     {
       Error_Handler();
@@ -303,57 +302,45 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
       Error_Handler();
     }
 
+    /* wait to receive response from the server */
+    ret = nx_udp_socket_receive(&UDPSocket, &server_packet, NX_APP_DEFAULT_TIMEOUT);
+    if (ret == NX_SUCCESS)
+    {
+      ULONG source_ip_address;
+      UINT source_port;
+
+      /* Get the server IP address and port */
+      nx_udp_source_extract(server_packet, &source_ip_address, &source_port);
+
+      /* Retrieve the data sent by the server */
+      nx_packet_data_retrieve(server_packet, data_buffer, &bytes_read);
+
+      /* Print the received data */
+      PRINT_DATA(source_ip_address, source_port, data_buffer);
+
+      /* Release the server packet */
+      nx_packet_release(server_packet);
+    }
+    else
+    {
+      /* Connection lost with the server, exit the loop */
+      break;
+    }
+
     /* Move the offset for the next packet */
     offset += current_packet_size;
 
     /* Increase sequence number of the packets */
     pkt_number++;
-
-    tx_thread_sleep(10);
-  }
-
-  tx_thread_sleep(100);
-}
-
-/**
-* @brief  Listening thread entry
-* @param thread_input: ULONG thread parameter
-* @retval none
-*/
-static VOID app_UDP_listening_thread_entry(ULONG thread_input)
-{
-  UINT ret;
-  NX_PACKET *server_packet;
-
-  /* create the UDP socket */
-  ret = nx_udp_socket_create(&NetXDuoEthIpInstance, &UDPListeningSocket, "UDP Listening Socket", NX_IP_NORMAL, NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE, QUEUE_MAX_SIZE);
-  if (ret != NX_SUCCESS)
-  {
-    Error_Handler();
-  }
-
-  /* bind UDP socket to the UDP CLIENT PORT */
-  ret = nx_udp_socket_bind(&UDPListeningSocket, UDP_CLIENT_PORT, TX_WAIT_FOREVER);
-  if (ret != NX_SUCCESS)
-  {
-    Error_Handler();
-  }
-
-  /* wait to receive response from the server */
-  ret = nx_udp_socket_receive(&UDPListeningSocket, &server_packet, NX_APP_DEFAULT_TIMEOUT);
-  if (ret != NX_SUCCESS)
-  {
-    Error_Handler();
   }
 
   /* unbind the socket and delete it */
   nx_udp_socket_unbind(&UDPSocket);
   nx_udp_socket_delete(&UDPSocket);
-  nx_udp_socket_unbind(&UDPListeningSocket);
-  nx_udp_socket_delete(&UDPListeningSocket);
 
-  /* Put micro in standby mode */
-  standby();
+  HAL_PWR_DisableWakeUpPin(PWR_WKUP1);
+  HAL_PWR_EnableWakeUpPin(PWR_WKUP1);
+  HAL_PWR_EnterSTANDBYMode();
 }
 
 /* USER CODE END 1 */

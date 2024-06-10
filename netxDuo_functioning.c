@@ -499,7 +499,7 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
   }
 
   /* bind UDP socket to the DEFAULT PORT */
-  ret = nx_udp_socket_bind(&UDPSocket, DEFAULT_PORT, TX_WAIT_FOREVER);
+  ret = nx_udp_socket_bind(&UDPSocket, 6002, TX_WAIT_FOREVER);
   if (ret != NX_SUCCESS)
   {
     Error_Handler();
