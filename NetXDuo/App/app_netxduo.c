@@ -62,6 +62,7 @@ static VOID nx_app_thread_entry (ULONG thread_input);
 /* USER CODE BEGIN PFP */
 /* UDP thread entry */
 static VOID app_UDP_thread_entry(ULONG thread_input);
+/* */
 static VOID app_UDP_listening_thread_entry(ULONG thread_input);
 
 //void SystemClock_Restore(void);
@@ -266,13 +267,6 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
     Error_Handler();
   }
 
-  /* bind UDP socket to the DEFAULT PORT */
-  ret = nx_udp_socket_bind(&UDPSocket, UDP_CLIENT_PORT, TX_WAIT_FOREVER);
-  if (ret != NX_SUCCESS)
-  {
-    Error_Handler();
-  }
-
   while (offset < MEMORY_SIZE)
   {
     /* create the packet to send over the UDP socket */
@@ -311,9 +305,14 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
 
     /* Move the offset for the next packet */
     offset += current_packet_size;
-	  /* Increase sequence number of the packets */
+
+    /* Increase sequence number of the packets */
     pkt_number++;
+
+    tx_thread_sleep(10);
   }
+
+  tx_thread_sleep(100);
 }
 
 /**
@@ -334,11 +333,11 @@ static VOID app_UDP_listening_thread_entry(ULONG thread_input)
   }
 
   /* bind UDP socket to the UDP CLIENT PORT */
-//  ret = nx_udp_socket_bind(&UDPListeningSocket, UDP_CLIENT_PORT, TX_WAIT_FOREVER);
-//  if (ret != NX_SUCCESS)
-//  {
-//    Error_Handler();
-//  }
+  ret = nx_udp_socket_bind(&UDPListeningSocket, UDP_CLIENT_PORT, TX_WAIT_FOREVER);
+  if (ret != NX_SUCCESS)
+  {
+    Error_Handler();
+  }
 
   /* wait to receive response from the server */
   ret = nx_udp_socket_receive(&UDPListeningSocket, &server_packet, NX_APP_DEFAULT_TIMEOUT);
@@ -348,6 +347,8 @@ static VOID app_UDP_listening_thread_entry(ULONG thread_input)
   }
 
   /* unbind the socket and delete it */
+  nx_udp_socket_unbind(&UDPSocket);
+  nx_udp_socket_delete(&UDPSocket);
   nx_udp_socket_unbind(&UDPListeningSocket);
   nx_udp_socket_delete(&UDPListeningSocket);
 
