@@ -1,4 +1,3 @@
-../NetXDuo/App/app_netxduo.c:76:6:MX_NetXDuo_Init	64	static
-../NetXDuo/App/app_netxduo.c:225:13:nx_app_thread_entry	32	static
-../NetXDuo/App/app_netxduo.c:334:13:app_UDP_thread_entry	600	static
-../NetXDuo/App/app_netxduo.c:458:13:app_link_thread_entry	40	static
+../NetXDuo/App/app_netxduo.c:73:6:MX_NetXDuo_Init	64	static
+../NetXDuo/App/app_netxduo.c:207:13:nx_app_thread_entry	32	static
+../NetXDuo/App/app_netxduo.c:234:13:app_UDP_thread_entry	72	static

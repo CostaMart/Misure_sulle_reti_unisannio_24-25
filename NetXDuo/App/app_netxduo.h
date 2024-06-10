@@ -87,8 +87,8 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr);
 #define DEFAULT_PRIORITY         10
 #define LINK_PRIORITY            11
 
-#define DEFAULT_PORT             6000
-#define UDP_SERVER_PORT          DEFAULT_PORT
+#define UDP_SERVER_PORT          6000
+#define UDP_CLIENT_PORT			 6001
 #define UDP_SERVER_ADDRESS       IP_ADDRESS(192, 168, 1, 101)
 
 
