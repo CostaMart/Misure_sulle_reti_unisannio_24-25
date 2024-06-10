@@ -197,7 +197,7 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
   }
   /* create the UDP server thread */
   ret = tx_thread_create(&AppUDPThread, "App UDP Thread", app_UDP_thread_entry, 0, pointer, 2 * DEFAULT_MEMORY_SIZE,
-	  				     15, DEFAULT_PRIORITY, TX_NO_TIME_SLICE, TX_DONT_START);
+		  LINK_PRIORITY, LINK_PRIORITY, TX_NO_TIME_SLICE, TX_DONT_START);
 
   if (ret != TX_SUCCESS)
   {
@@ -212,7 +212,7 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
 
   /* create the Link thread */
   ret = tx_thread_create(&AppLinkThread, "App Link Thread", app_link_thread_entry, 0, pointer, 2 * DEFAULT_MEMORY_SIZE,
-					     LINK_PRIORITY, LINK_PRIORITY, TX_NO_TIME_SLICE, TX_AUTO_START);
+		  LINK_PRIORITY, LINK_PRIORITY, TX_NO_TIME_SLICE, TX_AUTO_START);
 
 
 
@@ -484,6 +484,7 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
 
   NX_PACKET *server_packet;
   NX_PACKET *data_packet;
+  ULONG sent = 0;
 
   UINT pkt_number = 0;	/* packet number */
   UINT offset = 0;
@@ -537,16 +538,20 @@ static VOID app_UDP_thread_entry(ULONG thread_input)
       Error_Handler();
     }
 
+
+
     /* Move the offset for the next packet */
     offset += current_packet_size;
 	  /* Increase sequence number of the packets */
     pkt_number++;
 
-    if (MEMORY_SIZE <= offset){
-
-    }
+    tx_thread_sleep(10);
 
   }
+
+
+
+  tx_thread_sleep(100);
 
   /* wait to receive response from the server */
    // aspetta 2 secondi se non riceve nulla
@@ -576,9 +581,11 @@ static VOID app_link_thread_entry(ULONG thread_input)
 
 
 	  /* wait to receive response from the server */
-	  nx_udp_socket_receive(&UDPSocket2, &server_packet, NX_WAIT_FOREVER); // aspetta 2 secondi se non riceve nulla
+	  HAL_GPIO_TogglePin(LED3_RED_GPIO_Port, LED3_RED_Pin);
 
-		  HAL_GPIO_TogglePin(LED1_GREEN_GPIO_Port, LED1_GREEN_Pin);
+	  nx_udp_socket_receive(&UDPSocket2, &server_packet, NX_WAIT_FOREVER); // aspetta 2 secondi se non riceve nulla
+	  HAL_GPIO_TogglePin(LED3_RED_GPIO_Port, LED3_RED_Pin);
+
 	  	/* unbind the socket and delete it */
 	  	nx_udp_socket_unbind(&UDPSocket2);
 	  	nx_udp_socket_delete(&UDPSocket2);
