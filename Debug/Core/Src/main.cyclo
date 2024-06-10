@@ -3,5 +3,6 @@
 ../Core/Src/main.c:179:13:MX_ETH_Init	2
 ../Core/Src/main.c:228:13:MX_ICACHE_Init	2
 ../Core/Src/main.c:256:13:MX_GPIO_Init	1
-../Core/Src/main.c:316:6:HAL_TIM_PeriodElapsedCallback	2
-../Core/Src/main.c:333:6:Error_Handler	1
+../Core/Src/main.c:305:6:standby	1
+../Core/Src/main.c:320:6:HAL_TIM_PeriodElapsedCallback	2
+../Core/Src/main.c:337:6:Error_Handler	1
