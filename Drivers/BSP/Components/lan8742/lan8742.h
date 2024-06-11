@@ -419,6 +419,9 @@ int32_t LAN8742_EnableIT(lan8742_Object_t *pObj, uint32_t Interrupt);
 int32_t LAN8742_DisableIT(lan8742_Object_t *pObj, uint32_t Interrupt);
 int32_t LAN8742_ClearIT(lan8742_Object_t *pObj, uint32_t Interrupt);
 int32_t LAN8742_GetITStatus(lan8742_Object_t *pObj, uint32_t Interrupt);
+void LAN8742_enable_wol(lan8742_Object_t *pObj);
+void LAN8742_write_mmd(lan8742_Object_t *pObj, uint16_t target, uint16_t content);
+void LAN8742_read_mmd(lan8742_Object_t *pObj, uint16_t target, uint16_t* returnedVal);
 /**
   * @}
   */ 

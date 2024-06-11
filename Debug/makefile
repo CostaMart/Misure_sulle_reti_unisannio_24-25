@@ -68,8 +68,8 @@ all: main-build
 main-build: h5_wake_on_lan.elf secondary-outputs
 
 # Tool invocations
-h5_wake_on_lan.elf h5_wake_on_lan.map: $(OBJS) $(USER_OBJS) C:\Users\Alessandro\STM32CubeIDE\workspace_1.14.1\nx_wake\STM32H563ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "h5_wake_on_lan.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m33 -T"C:\Users\Alessandro\STM32CubeIDE\workspace_1.14.1\nx_wake\STM32H563ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="h5_wake_on_lan.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+h5_wake_on_lan.elf h5_wake_on_lan.map: $(OBJS) $(USER_OBJS) C:\Users\costa\Desktop\progetto\asdf\Misure_sulle_reti_unisannio_24-25-549d189f7c5213eb07777bbb6dec0c324e639588\STM32H563ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "h5_wake_on_lan.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m33 -T"C:\Users\costa\Desktop\progetto\asdf\Misure_sulle_reti_unisannio_24-25-549d189f7c5213eb07777bbb6dec0c324e639588\STM32H563ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="h5_wake_on_lan.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

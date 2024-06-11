@@ -302,6 +302,11 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void standby (void){
+  HAL_PWR_DisableWakeUpPin(PWR_WKUP1);
+  HAL_PWR_EnableWakeUpPin(PWR_WKUP1);
+  HAL_PWR_EnterSTANDBYMode();
+}
 /* USER CODE END 4 */
 
 /**
@@ -333,10 +338,9 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+	 HAL_PWR_DisableWakeUpPin(PWR_WKUP1);
+		  	    HAL_PWR_EnableWakeUpPin(PWR_WKUP1);
+		  	    HAL_PWR_EnterSTANDBYMode();
   /* USER CODE END Error_Handler_Debug */
 }
 
