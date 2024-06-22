@@ -278,8 +278,7 @@ static VOID nx_app_thread_entry (ULONG thread_input)
 
 
 
-	  	 /* Size of the packet number header */
-	  	  nx_udp_socket_create(&NetXDuoEthIpInstance, &UDPSocket2, "UDP Client Socket", NX_IP_NORMAL, NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE, QUEUE_MAX_SIZE);
+
 
 	  	  /* create the UDP socket */
 	  	  nx_udp_socket_create(&NetXDuoEthIpInstance, &UDPSocket2, "UDP Client Socket", NX_IP_NORMAL, NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE, QUEUE_MAX_SIZE);
@@ -290,7 +289,9 @@ static VOID nx_app_thread_entry (ULONG thread_input)
 	  	  ret = nx_udp_socket_bind(&UDPSocket2, 6001, NX_WAIT_FOREVER);
 	  	  ret = 0;
 
-	  	ret = nx_udp_socket_receive(&UDPSocket2, &server_packet, 100);
+
+	  	  ret = nx_udp_socket_receive(&UDPSocket2, &server_packet, 100);
+
 
 	  	  /* wait to receive response from the server */
 
