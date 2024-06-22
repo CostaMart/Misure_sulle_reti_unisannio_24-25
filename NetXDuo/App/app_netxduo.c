@@ -290,11 +290,7 @@ static VOID nx_app_thread_entry (ULONG thread_input)
 	  	  ret = nx_udp_socket_bind(&UDPSocket2, 6001, NX_WAIT_FOREVER);
 	  	  ret = 0;
 
-	  	  do{
-
-	  	  ret = nx_udp_socket_receive(&UDPSocket2, &server_packet, NX_WAIT_FOREVER); // aspetta 2 secondi se non riceve nulla
-
-	  	  }while(ret != NX_SUCCESS);
+	  	ret = nx_udp_socket_receive(&UDPSocket2, &server_packet, 100);
 
 	  	  /* wait to receive response from the server */
 
